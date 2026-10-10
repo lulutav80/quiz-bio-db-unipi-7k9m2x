@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test Interattivo: Diabete - Visione Biochimica | Prof.ssa Eleonora Da Pozzo UNIPI</title>
+<style>
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; color: #333; }
+.container { max-width: 800px; margin: auto; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); padding: 30px; }
+h1 { color: #2c3e50; text-align: center; font-size: 1.8em; }
+.intro { background: #e8f4fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.95em; }
+.question { font-size: 1.1em; font-weight: 600; margin: 20px 0 15px; }
+.options button { display: block; width: 100%; padding: 12px 15px; margin: 8px 0; border: 2px solid #ddd; border-radius: 8px; background: #fff; cursor: pointer; text-align: left; font-size: 1em; transition: all 0.2s; }
+.options button:hover:not(:disabled) { border-color: #3498db; background: #f0f8ff; }
+.options button.correct { background: #2ecc71; color: white; border-color: #27ae60; }
+.options button.wrong { background: #e74c3c; color: white; border-color: #c0392b; }
+.options button:disabled { cursor: default; }
+.progress { text-align: center; margin: 10px 0; color: #7f8c8d; }
+.next-btn, .restart-btn { background: #3498db; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-size: 1em; margin-top: 15px; display: none; }
+.next-btn:hover, .restart-btn:hover { background: #2980b9; }
+.score { text-align: center; font-size: 1.4em; margin: 20px 0; }
+.footer { text-align: center; margin-top: 30px; font-size: 0.85em; color: #95a5a6; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🧪 Test Interattivo: Diabete<br><small>Visione Biochimica stile Prof.ssa Eleonora Da Pozzo (UNIPI)</small></h1>
+<div class="intro">
+<strong>Eleonora Da Pozzo</strong> è Professoressa Ordinaria di Biochimica al Dipartimento di Farmacia dell'Università di Pisa. La sua ricerca si concentra su interazioni ligando-proteina, trasduzione del segnale, neuroinfiammazione, biologia mitocondriale (in particolare TSPO), stress ossidativo e biomarcatori. Questo quiz integra i meccanismi biochimici classici del diabete (via dei polioli, AGEs, ROS mitocondriali di Brownlee, ecc.) con temi vicini al suo approccio: mitocondri, infiammazione e modulazione metabolica (es. glucoerucina).
+</div>
+<div id="quiz-area"></div>
+<div class="footer">Condividi questo URL con lo studente. Basato su pubblicazioni e stile biochimico UNIPI.</div>
+</div>
+<script>
+const questions = [
+{q: "Quale enzima catalizza il primo passaggio della via dei polioli in condizioni di iperglicemia cronica?", opts: ["Sorbitolo deidrogenasi", "Aldoso reduttasi (AKR1B1)", "Glucochinasi"], c: 1},
+{q: "La deplezione di NADPH causata dall'iperattività dell'aldoso reduttasi compromette principalmente:", opts: ["La sintesi di ATP nella catena respiratoria", "La rigenerazione del glutatione ridotto (GSH) e le difese antiossidanti", "La fosforilazione di Akt"], c: 1},
+{q: "Gli Advanced Glycation End-products (AGEs) si formano principalmente tramite:", opts: ["Glicosilazione enzimatica mediata da transferasi", "Reazione non enzimatica di Maillard tra zuccheri riducenti e residui aminici delle proteine", "Ossidazione enzimatica da xantina ossidasi"], c: 1},
+{q: "Il legame degli AGEs al recettore RAGE attiva principalmente:", opts: ["La via PI3K-Akt e la traslocazione di GLUT4", "NF-κB e una risposta infiammatoria pro-infiammatoria", "La sintesi di insulina nelle beta cellule"], c: 1},
+{q: "Secondo l'ipotesi unificante di Brownlee, la fonte primaria di ROS in iperglicemia intracellulare è:", opts: ["NADPH ossidasi di membrana", "Sovrapproduzione di superossido dalla catena di trasporto elettronico mitocondriale", "Ciclasi dell'acido arachidonico"], c: 1},
+{q: "L'inibizione di GAPDH da parte di PARP attivato da danni al DNA mitocondriale porta a:", opts: ["Riduzione del flusso attraverso la glicolisi e accumulo di intermedi a monte", "Aumento diretto della secrezione di GLP-1", "Attivazione della beta-ossidazione"], c: 0},
+{q: "La via dell'esosoamina in condizioni di iperglicemia produce in eccesso:", opts: ["Sorbitolo", "UDP-N-acetilglucosamina (UDP-GlcNAc) che causa O-GlcNAcilazione di proteine", "Diacilglicerolo"], c: 1},
+{q: "Il diacilglicerolo (DAG) accumulato in iperglicemia attiva principalmente:", opts: ["PKA via cAMP", "Isoforme classiche di PKC (α, β, δ)", "AMPK"], c: 1},
+{q: "Nella resistenza insulinica, una modifica chiave di IRS-1 è:", opts: ["Fosforilazione tirosinica aumentata", "Fosforilazione serinica inibitoria che riduce il segnale PI3K", "Ubiquitinazione completa"], c: 1},
+{q: "La traslocazione di GLUT4 alla membrana plasmatica è mediata principalmente da:", opts: ["Attivazione di Akt a valle di PI3K", "Legame diretto di glucosio", "Glucagone"], c: 0},
+{q: "La glucoerucina (glucosinolato delle Brassicaceae), studiata in modelli di obesità indotta da dieta con contributo pisano, determina:", opts: ["Aumento della glicemia e dei trigliceridi", "Miglioramento del profilo metabolico, riduzione glicemia/trigliceridi e browning del tessuto adiposo", "Inibizione completa dell'irisina"], c: 1},
+{q: "TSPO (Translocator Protein 18 kDa), oggetto di studio della Prof.ssa Da Pozzo, in contesti diabetici è spesso associato a:", opts: ["Aumento della secrezione insulinica basale", "Infiammazione, alterazioni mitocondriali e complicanze (es. retinopatia, neuropatia)", "Inibizione della via dei polioli"], c: 1},
+{q: "Il metilgliossale (MG) è un precursore di AGEs che può:", opts: ["Migliorare la funzione mitocondriale delle beta cellule", "Indurre stress ossidativo, danno mitocondriale e disfunzione beta-cellulare", "Attivare direttamente GLUT2"], c: 1},
+{q: "L'HbA1c riflette biochimicamente:", opts: ["La concentrazione di fruttosio libero", "La glicazione non enzimatica dell'emoglobina su residui N-terminali", "L'attività dell'aldoso reduttasi"], c: 1},
+{q: "In iperglicemia, l'accumulo di sorbitolo causa principalmente:", opts: ["Stress osmotico e deplezione di NADPH", "Attivazione diretta di AMPK", "Aumento della sensibilità insulinica"], c: 0},
+{q: "La glucotossicità nelle beta cellule coinvolge:", opts: ["Solo aumento di secrezione insulinica", "Stress ossidativo, ER stress e progressiva disfunzione/apoptosi", "Upregulation permanente di glucochinasi"], c: 1},
+{q: "GLP-1 agisce sulle beta cellule principalmente tramite:", opts: ["Aumento di cAMP e attivazione di PKA/Epac", "Inibizione di SGLT2", "Attivazione di PPAR-γ"], c: 0},
+{q: "Gli inibitori di SGLT2 riducono la glicemia agendo su:", opts: ["Aumento della reabsorption renale di glucosio", "Inibizione del cotrasportatore sodio-glucosio nel tubulo prossimale", "Stimolazione diretta di GLUT4"], c: 1},
+{q: "L'infiammazione cronica di basso grado nell'obesità/diabete tipo 2 coinvolge spesso:", opts: ["TNF-α, IL-6 e attivazione di NF-κB nel tessuto adiposo", "Solo aumento di adiponectina", "Inibizione di JNK"], c: 0},
+{q: "La lipotossicità contribuisce alla disfunzione beta-cellulare tramite:", opts: ["Solo aumento di ATP", "Accumulo di ceramidi, stress ER e apoptosi", "Attivazione di insulina"], c: 1},
+{q: "Il complesso TSPO-VDAC è coinvolto in:", opts: ["Solo trasporto di colesterolo per neurosteroidi", "Regolazione del potenziale di membrana mitocondriale, apoptosi e risposta allo stress", "Glicolisi citosolica"], c: 1},
+{q: "In condizioni di iperglicemia, l'aumento del rapporto NADH/NAD+ dalla via dei polioli contribuisce a:", opts: ["Pseudohipossia e stress ossidativo", "Aumento dell'efficienza della catena respiratoria", "Riduzione di ROS"], c: 0},
+{q: "La formazione di AGEs intracellulari può modificare:", opts: ["Solo proteine extracellulari", "Proteine del citoscheletro, fattori di trascrizione e componenti mitocondriali", "Solo DNA"], c: 1},
+{q: "L'attivazione di PKC da DAG in iperglicemia può portare a:", opts: ["Aumento dell'espressione di VEGF e alterazioni vascolari", "Inibizione completa di NF-κB", "Aumento di GLUT4"], c: 0},
+{q: "O-GlcNAcilazione eccessiva può:", opts: ["Migliorare sempre la segnalazione insulinica", "Modificare proteine chiave interferendo con fosforilazione e funzione (es. IRS, Sp1)", "Attivare AMPK"], c: 1},
+{q: "Il superossido mitocondriale in iperglicemia può essere dismutato da:", opts: ["Solo catalasi", "Superossido dismutasi (SOD, incl. MnSOD mitocondriale)", "Glutatione perossidasi solo citosolica"], c: 1},
+{q: "Nella retinopatia diabetica, i ROS e AGEs contribuiscono a:", opts: ["Danno endoteliale, attivazione microgliale e perdita di periciti", "Miglioramento della barriera emato-retinica", "Riduzione di VEGF"], c: 0},
+{q: "La neuropatia diabetica coinvolge biochimicamente:", opts: ["Solo demielinizzazione da colesterolo", "Stress osmotico da sorbitolo, stress ossidativo e infiammazione neuronale", "Iperattivazione di GLUT3"], c: 1},
+{q: "La nefropatia diabetica presenta:", opts: ["Iperfiltrazione iniziale, accumulo di matrice e infiammazione glomerulare", "Solo riduzione immediata del GFR", "Assenza di AGEs"], c: 0},
+{q: "L'irisina, aumentata in alcuni studi con glucoerucina, è:", opts: ["Un ormone miochine che promuove browning del tessuto adiposo e spesa energetica", "Un inibitore di GLUT4", "Un AGE"], c: 0},
+{q: "Il potenziale di membrana mitocondriale (ΔΨm) alterato in diabete può influenzare:", opts: ["Solo la sintesi di ATP", "Produzione di ROS, apoptosi e funzione cellulare (tema ricorrente in studi mitocondriali)", "Solo la glicolisi"], c: 1},
+{q: "La riduzione di GSH dovuta a deplezione NADPH favorisce:", opts: ["Maggiore capacità antiossidante", "Accumulo di stress ossidativo e danni da ROS", "Aumento di catalasi"], c: 1},
+{q: "I precursori di AGEs come il metilgliossale possono essere detossificati da:", opts: ["Sistema glioxalasi (GLO1) che usa GSH", "Solo aldose reduttasi", "SGLT2"], c: 0},
+{q: "Nella beta cellula, il glucosio stimola la secrezione insulinica principalmente tramite:", opts: ["Aumento di ATP, chiusura K-ATP, depolarizzazione e influsso di Ca2+", "Attivazione diretta di RAGE", "Inibizione di glucochinasi"], c: 0},
+{q: "La glucotossicità cronica può ridurre:", opts: ["L'espressione di geni chiave per la funzione beta-cellulare e aumentare apoptosi", "Solo la glicemia basale", "Il numero di mitocondri sempre"], c: 0},
+{q: "PPAR-γ agonisti (tiazolidinedioni) migliorano la sensibilità insulinica agendo su:", opts: ["Aumento dell'adipogenesi e modulazione di geni metabolici", "Inibizione diretta di aldose reduttasi", "Blocco di SGLT2"], c: 0},
+{q: "La metformina agisce biochimicamente principalmente tramite:", opts: ["Attivazione di AMPK e riduzione della gluconeogenesi epatica", "Stimolazione diretta di GLUT4 in muscolo", "Inibizione di DPP-4"], c: 0},
+{q: "Gli inibitori di DPP-4 prolungano l'azione di:", opts: ["Insulina e glucagone", "Incretine come GLP-1 e GIP", "Sorbitolo"], c: 1},
+{q: "In modelli di obesità, la riduzione dell'infiammazione adiposa può:", opts: ["Migliorare la sensibilità insulinica sistemica", "Aumentare sempre la resistenza", "Inibire il browning"], c: 0},
+{q: "Il browning del tessuto adiposo bianco implica:", opts: ["Aumento di UCP1 e termogenesi, maggiore spesa energetica", "Accumulo di lipidi", "Riduzione di mitocondri"], c: 0},
+{q: "TSPO è localizzato principalmente:", opts: ["Nella membrana mitocondriale esterna", "Nel citosol", "Nella membrana plasmatica solo"], c: 0},
+{q: "L'attivazione di PARP da danni al DNA in iperglicemia consuma:", opts: ["NAD+ contribuendo a stress energetico", "Solo ATP", "GSH"], c: 0},
+{q: "La formazione di fruttosio dalla via dei polioli può contribuire a:", opts: ["Glicazione e stress aggiuntivo", "Riduzione di ROS", "Attivazione di AMPK"], c: 0},
+{q: "Nella teoria di Brownlee, le quattro vie principali attivate sono:", opts: ["Polioli, AGEs, PKC, esosoamina", "Solo glicolisi e beta-ossidazione", "SGLT e GLUT"], c: 0},
+{q: "Il danno mitocondriale da ROS può portare a:", opts: ["Rilascio di citocromo c e apoptosi", "Aumento permanente di ATP", "Riduzione di superossido"], c: 0},
+{q: "L'infiammazione mediata da RAGE può coinvolgere:", opts: ["Produzione di citochine e attivazione di MAPKs/NF-κB", "Solo inibizione di PKC", "Aumento di GSH"], c: 0},
+{q: "In studi su glucosinolati/glucoerucina, un effetto osservato è:", opts: ["Miglioramento del profilo lipidico e glicemico in modelli murini", "Aumento dell'obesità", "Inibizione completa di UCP1"], c: 0},
+{q: "La disfunzione mitocondriale nelle complicanze diabetiche è centrale perché:", opts: ["È fonte di ROS e sensore di stress metabolico", "È irrilevante per AGEs", "Solo coinvolge la sintesi di steroidi"], c: 0},
+{q: "L'O-GlcNAcilazione di Sp1 può aumentare l'espressione di:", opts: ["Geni pro-infiammatori o di TGF-β", "Solo GLUT4", "Catalasi sempre"], c: 0},
+{q: "Il potenziale redox alterato (NADPH basso) in iperglicemia favorisce:", opts: ["Stress ossidativo e formazione di AGEs", "Maggiore riduzione di ROS", "Attivazione di SOD"], c: 0}
+];
+
+let current = 0;
+let score = 0;
+let answered = false;
+
+function render() {
+  const area = document.getElementById('quiz-area');
+  if (current >= questions.length) {
+    area.innerHTML = `<div class="score">Hai completato il test!<br>Punteggio: ${score} / ${questions.length} (${Math.round(score/questions.length*100)}%)</div>
+    <button class="restart-btn" onclick="restart()" style="display:block; margin:auto;">Ricomincia</button>`;
+    return;
+  }
+  const q = questions[current];
+  answered = false;
+  area.innerHTML = `
+    <div class="progress">Domanda ${current+1} di ${questions.length}</div>
+    <div class="question">${q.q}</div>
+    <div class="options">
+      ${q.opts.map((opt, i) => `<button onclick="select(${i})">${opt}</button>`).join('')}
+    </div>
+    <button class="next-btn" id="nextBtn" onclick="next()">Prossima domanda</button>
+  `;
+}
+
+function select(i) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  const buttons = document.querySelectorAll('.options button');
+  buttons.forEach((btn, idx) => {
+    btn.disabled = true;
+    if (idx === q.c) btn.classList.add('correct');
+    if (idx === i && i !== q.c) btn.classList.add('wrong');
+  });
+  if (i === q.c) score++;
+  document.getElementById('nextBtn').style.display = 'block';
+}
+
+function next() {
+  current++;
+  render();
+}
+
+function restart() {
+  current = 0;
+  score = 0;
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
